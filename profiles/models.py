@@ -7,8 +7,8 @@ class Profile(models.Model):
         get_user_model(),
         on_delete=models.CASCADE
     )
-    bio = models.CharField(max_length=511)
-    picture = models.ImageField(upload_to="pictures")
+    bio = models.CharField(max_length=511, blank=True)
+    picture = models.ImageField(upload_to="pictures", blank=True)
     follows = models.ManyToManyField(
         "self",
         related_name="followed_by",
