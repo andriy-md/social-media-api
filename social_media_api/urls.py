@@ -21,7 +21,9 @@ from social_media_api import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("post/", include("posts.urls", namespace="posts"))
+    path("api/user/", include("users.urls", namespace="user")),
+    path("api/post/", include("posts.urls", namespace="post")),
+    path("api/profile/", include("profiles.urls", namespace="profile"))
 ]
 
 if settings.DEBUG:
