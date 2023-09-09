@@ -5,7 +5,8 @@ from django.db import models
 class Profile(models.Model):
     user = models.OneToOneField(
         get_user_model(),
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        editable=False,
     )
     bio = models.CharField(max_length=511, blank=True)
     picture = models.ImageField(upload_to="pictures", blank=True)
