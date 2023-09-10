@@ -3,7 +3,7 @@ from rest_framework import serializers
 from profiles.models import Profile
 
 
-class ProfileRetrieveSerializer(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
     follows = serializers.StringRelatedField(many=True)
     followed_by = serializers.StringRelatedField(many=True)

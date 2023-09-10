@@ -8,7 +8,7 @@ router = DefaultRouter()
 router.register("", ProfileViewSet)
 
 urlpatterns = [
-    path("me/", OwnProfileRetrieveUpdateView.as_view()),
+    path("me/", OwnProfileRetrieveUpdateView.as_view(), name="my-profile"),
 ]
 
 urlpatterns += router.urls
