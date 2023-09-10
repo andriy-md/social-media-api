@@ -18,7 +18,7 @@ class ProfileViewSet(
 
     def get_queryset(self):
         queryset = Profile.objects.all()
-        if self.request.query_params["email"]:
+        if self.request.query_params.get("email", False):
             target = self.request.query_params["email"]
             print(target)
             queryset = queryset.filter(user__email__icontains=target)

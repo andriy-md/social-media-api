@@ -45,6 +45,19 @@ class AuthenticatedProfileTest(TestCase):
         self.assertEqual(len(response.data), 3)
         self.assertEqual(response.data, serializer.data)
 
+    def test_list_profiles_search_by_user_email(self):
+        get_profile(email="qwert@mail.com")
+        get_profile(email="user3@mail.com")
+
+        searched_user = Profile.objects.filter(
+            user__email__icontains="qwert"
+        )
+        serializer = ProfileSerializer(searched_user, many=True)
+        response = self.client.get(f"{PROFILES_LIST_URL}?email=qwert")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(serializer.data, response.data)
+
     def test_opens_own_profile(self):
         get_profile(email="user2@mail.com")
         own_profile = Profile.objects.get(user=self.user)
