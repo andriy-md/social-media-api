@@ -1,20 +1,30 @@
-from rest_framework import generics
+from rest_framework import generics, mixins
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.viewsets import GenericViewSet
 
 from profiles.models import Profile
 from profiles.serializers import (
-    OwnProfileRetrieveSerializer, OwnProfileUpdateSerializer,
+    ProfileRetrieveSerializer, OwnProfileUpdateSerializer,
 )
 from users.serializers import UserSerializer
 
 
-class ProfileRetrieveUpdateView(RetrieveUpdateAPIView):
-    serializer_class = OwnProfileRetrieveSerializer
+class ProfileViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    GenericViewSet
+):
+    serializer_class = ProfileRetrieveSerializer
+    queryset = Profile.objects.all()
+
+
+class OwnProfileRetrieveUpdateView(RetrieveUpdateAPIView):
+    serializer_class = ProfileRetrieveSerializer
     queryset = Profile.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == "GET":
-            return OwnProfileRetrieveSerializer
+            return ProfileRetrieveSerializer
         return OwnProfileUpdateSerializer
 
     def get_object(self):

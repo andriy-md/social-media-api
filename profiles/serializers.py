@@ -1,10 +1,9 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from profiles.models import Profile
 
 
-class OwnProfileRetrieveSerializer(serializers.ModelSerializer):
+class ProfileRetrieveSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)
     follows = serializers.StringRelatedField(many=True)
     followed_by = serializers.StringRelatedField(many=True)
