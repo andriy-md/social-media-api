@@ -1,5 +1,5 @@
 from rest_framework import generics
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, GenericAPIView
+from rest_framework.generics import RetrieveUpdateAPIView
 
 from profiles.models import Profile
 from profiles.serializers import (
@@ -8,7 +8,7 @@ from profiles.serializers import (
 from users.serializers import UserSerializer
 
 
-class ProfileRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
+class ProfileRetrieveUpdateView(RetrieveUpdateAPIView):
     serializer_class = OwnProfileRetrieveSerializer
     queryset = Profile.objects.all()
 
