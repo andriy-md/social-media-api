@@ -16,6 +16,14 @@ class ProfileViewSet(
     serializer_class = ProfileSerializer
     queryset = Profile.objects.all()
 
+    def get_queryset(self):
+        queryset = Profile.objects.all()
+        if self.request.query_params["email"]:
+            target = self.request.query_params["email"]
+            print(target)
+            queryset = queryset.filter(user__email__icontains=target)
+        return queryset
+
 
 class OwnProfileRetrieveUpdateView(RetrieveUpdateAPIView):
     serializer_class = ProfileSerializer
