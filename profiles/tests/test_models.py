@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase
 
 from profiles.models import Profile
@@ -55,3 +56,10 @@ class ProfileModelTest(TestCase):
 
         self.assertEqual(self.profile1.follows.count(), 1)
         self.assertEqual(profile2.follows.count(), 0)
+
+    def test_profile_deletes_if_user_is_deleted(self):
+        user = get_user_model().objects.get(email="test_user@test.com")
+        user.delete()
+
+        with self.assertRaises(ObjectDoesNotExist):
+            self.profile1.refresh_from_db()
