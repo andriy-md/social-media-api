@@ -1,16 +1,29 @@
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework import generics
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, GenericAPIView
 
 from profiles.models import Profile
-from profiles.serializers import ProfileSerializer
+from profiles.serializers import (
+    OwnProfileRetrieveSerializer, OwnProfileUpdateSerializer,
+)
+from users.serializers import UserSerializer
 
 
-class ProfileRetrieveUpdateView(RetrieveUpdateAPIView):
-    serializer_class = ProfileSerializer
-    # queryset = Profile.objects.all()
+class ProfileRetrieveUpdateView(RetrieveUpdateDestroyAPIView):
+    serializer_class = OwnProfileRetrieveSerializer
+    queryset = Profile.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return OwnProfileRetrieveSerializer
+        return OwnProfileUpdateSerializer
 
     def get_object(self):
         return Profile.objects.get(user=self.request.user)
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     print(self.request.user)
-    #     return Profile.objects.get(user=self.request.user)
+
+class ManageUserView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return self.request.user
+
