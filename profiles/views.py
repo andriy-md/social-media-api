@@ -6,7 +6,6 @@ from profiles.models import Profile
 from profiles.serializers import (
     ProfileRetrieveSerializer, OwnProfileUpdateSerializer,
 )
-from users.serializers import UserSerializer
 
 
 class ProfileViewSet(
@@ -29,11 +28,3 @@ class OwnProfileRetrieveUpdateView(RetrieveUpdateAPIView):
 
     def get_object(self):
         return Profile.objects.get(user=self.request.user)
-
-
-class ManageUserView(generics.RetrieveUpdateAPIView):
-    serializer_class = UserSerializer
-
-    def get_object(self):
-        return self.request.user
-
