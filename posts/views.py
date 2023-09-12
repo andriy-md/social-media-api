@@ -1,9 +1,9 @@
-from django.shortcuts import render
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from posts.models import Post
+from posts.serializers import PostListSerializer
 
 
-@api_view(["GET"])
-def simple_api_view(request):
-    x = 33
-    return Response({"number": x})
+class PostViewSet(ModelViewSet):
+    serializer_class = PostListSerializer
+    queryset = Post.objects.prefetch_related("hashtags").select_related("author").all()
