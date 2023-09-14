@@ -1,0 +1,84 @@
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from posts.models import Hashtag, Post
+from posts.serializers import PostListSerializer
+from profiles.models import Profile
+from profiles.tests.test_profile_api import get_profile, create_sample_user
+
+
+POSTS_LIST_URL = reverse("posts:post-list")
+
+
+def create_sample_post(
+            author: Profile,
+            text: str = "This is sample post only to test api",
+            hashtags: tuple = (),
+        ):
+    post = Post.objects.create(
+        author=author,
+        text=text
+    )
+    for hashtag in hashtags:
+        new_hashtag, created = Hashtag.objects.get_or_create(name=hashtag)
+        post.hashtags.add(new_hashtag.id)
+    return post
+
+
+class AuthenticatedPostTest(TestCase):
+    def setUp(self) -> None:
+        self.client = APIClient()
+        self.user = create_sample_user()
+
+    def test_list_posts(self):
+        profile = get_profile(email="second_user@aa.com")
+        create_sample_post(author=profile)
+        create_sample_post(author=profile)
+        posts = Post.objects.all()
+        serializer = PostListSerializer(posts, many=True)
+        response = self.client.get(POSTS_LIST_URL)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(len(response.data), len(serializer.data))
+
+    def test_filter_by_author(self):
+        profile2 = get_profile(email="second_user@aa.com")
+        profile3 = get_profile(email="third_user@aa.com")
+        create_sample_post(author=profile2)
+        create_sample_post(author=profile3)
+
+        searched_posts = Post.objects.filter(
+            author__user__email__icontains="third"
+        )
+        response = self.client.get(f"{POSTS_LIST_URL}?author=third")
+        serializer = PostListSerializer(searched_posts, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(len(response.data), len(serializer.data))
+
+    def test_filter_by_tag(self):
+        profile2 = get_profile(email="second_user@aa.com")
+        create_sample_post(
+            author=profile2,
+            hashtags=("economy", "history")
+        )
+        create_sample_post(
+            author=profile2,
+            hashtags=("history", "sport")
+        )
+        create_sample_post(
+            author=profile2,
+            hashtags=("economy", "food")
+        )
+
+        searched_query = Post.objects.filter(hashtags__id=1)
+        searched_query = searched_query.filter(hashtags__id=2)
+        serializer = PostListSerializer(searched_query, many=True)
+        response = self.client.get(f"{POSTS_LIST_URL}?hashtag=economy,history")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
