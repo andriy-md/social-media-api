@@ -13,7 +13,12 @@ class Hashtag(models.Model):
 class Post(models.Model):
     text = models.TextField()
     author = models.ForeignKey(Profile, on_delete=models.CASCADE)
-    hashtags = models.ManyToManyField(Hashtag, related_name="posts")
+    hashtags = models.ManyToManyField(
+        Hashtag,
+        related_name="posts",
+        blank=True,
+        null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
