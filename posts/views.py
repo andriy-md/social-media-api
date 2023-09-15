@@ -15,7 +15,7 @@ class PostViewSet(ModelViewSet):
         "hashtags").select_related("author").all()
 
     def get_serializer_class(self):
-        if self.action in ("list", "my_posts"):
+        if self.action in ("list", "get_my_posts", "get_followed_posts"):
             return PostListSerializer
         return PostCreateSerializer
 
@@ -32,8 +32,7 @@ class PostViewSet(ModelViewSet):
             queryset = queryset.filter(query)
 
         if self.request.query_params.get("hashtag"):
-            searched_tags = self.request.query_params.get("hashtag")
-            searched_tags = searched_tags.split(",")
+            searched_tags = self.request.query_params.get("hashtag").split(",")
             for tag in searched_tags:
                 queryset = queryset.filter(hashtags__name=tag)
 
@@ -44,7 +43,22 @@ class PostViewSet(ModelViewSet):
         serializer.save(author=profile)
 
     @action(detail=False, methods=["get"], url_path="my-posts")
-    def my_posts(self, request):
-        my_posts = self.get_queryset().filter(author__user=request.user)
+    def get_my_posts(self, request):
+        my_posts = self.get_queryset().filter(
+            author__user=request.user)
         serializer = self.get_serializer(my_posts, many=True)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=["get"], url_path="followed")
+    def get_followed_posts(self, request):
+        followed_posts = self.get_queryset().filter(
+            author__in=request.user.profile.follows.all()
+        )
+        serializer = self.get_serializer(followed_posts, many=True)
+        return Response(
+            data=serializer.data,
+            status=status.HTTP_200_OK
+        )
