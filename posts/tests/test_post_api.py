@@ -87,9 +87,9 @@ class AuthenticatedPostTest(TestCase):
     def test_get_user_own_posts(self):
         profile1 = Profile.objects.get(user=self.user)
         profile2 = get_profile(email="second_user@mm.com")
-        post_1 = create_sample_post(author=profile1)
-        post_2 = create_sample_post(author=profile1)
-        post_3 = create_sample_post(author=profile2)
+        create_sample_post(author=profile1)
+        create_sample_post(author=profile1)
+        create_sample_post(author=profile2)
 
         searched_query = Post.objects.filter(author=profile1)
         serializer = PostListSerializer(searched_query, many=True)
@@ -97,6 +97,26 @@ class AuthenticatedPostTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_get_followed_posts(self):
+        # profile 1 (current user) follows profile 2, but not profile 3
+        profile1 = Profile.objects.get(user=self.user)
+        profile2 = get_profile(email="second_user@mm.com")
+        profile1.follows.add(profile2)
+        profile3 = get_profile(email="third_user@mm.com")
+
+        # create_posts
+        create_sample_post(author=profile1)
+        create_sample_post(author=profile2)
+        create_sample_post(author=profile2)
+        create_sample_post(author=profile3)
+
+        searched_query = Post.objects.filter(author=profile2)
+        serializer = PostListSerializer(searched_query, many=True)
+        response = self.client.get(f"{POSTS_LIST_URL}followed/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
     def test_create_post_without_creating_hashtags(self):
