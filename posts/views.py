@@ -15,7 +15,7 @@ class PostViewSet(ModelViewSet):
         "hashtags").select_related("author").all()
 
     def get_serializer_class(self):
-        if self.action == "list":
+        if self.action in ("list", "my_posts"):
             return PostListSerializer
         return PostCreateSerializer
 

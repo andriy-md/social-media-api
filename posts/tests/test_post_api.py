@@ -84,6 +84,21 @@ class AuthenticatedPostTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
 
+    def test_get_user_own_posts(self):
+        profile1 = Profile.objects.get(user=self.user)
+        profile2 = get_profile(email="second_user@mm.com")
+        post_1 = create_sample_post(author=profile1)
+        post_2 = create_sample_post(author=profile1)
+        post_3 = create_sample_post(author=profile2)
+
+        searched_query = Post.objects.filter(author=profile1)
+        serializer = PostListSerializer(searched_query, many=True)
+        response = self.client.get(f"{POSTS_LIST_URL}my-posts/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data, serializer.data)
+
     def test_create_post_without_creating_hashtags(self):
         Hashtag.objects.create(name="first")
         Hashtag.objects.create(name="second")
