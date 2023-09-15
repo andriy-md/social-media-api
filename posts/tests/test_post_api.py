@@ -31,6 +31,7 @@ class AuthenticatedPostTest(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
         self.user = create_sample_user()
+        self.client.force_authenticate(self.user)
 
     def test_list_posts(self):
         profile = get_profile(email="second_user@aa.com")
@@ -82,3 +83,43 @@ class AuthenticatedPostTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, serializer.data)
+
+    def test_create_post_without_creating_hashtags(self):
+        Hashtag.objects.create(name="first")
+        Hashtag.objects.create(name="second")
+        payload = {
+            "hashtags": [
+                {"name": "first"},
+                {"name": "second"}
+            ],
+            "text": "Test post via API"
+        }
+        response = self.client.post(POSTS_LIST_URL, data=payload, format="json")
+        created_post = Post.objects.filter(text="Test post via API")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(created_post.count(), 1)
+        self.assertEqual(created_post[0].text, payload["text"])
+        self.assertEqual(
+            list(created_post[0].hashtags.all()),
+            list(Hashtag.objects.all())
+        )
+
+    def test_create_post_and_hashtags(self):
+        payload = {
+            "hashtags": [
+                {"name": "first"},
+                {"name": "second"}
+            ],
+            "text": "Test post via API"
+        }
+        response = self.client.post(POSTS_LIST_URL, data=payload, format="json")
+        created_post = Post.objects.filter(text="Test post via API")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(created_post.count(), 1)
+        self.assertEqual(created_post[0].text, payload["text"])
+        self.assertEqual(
+            list(created_post[0].hashtags.all()),
+            list(Hashtag.objects.all())
+        )
