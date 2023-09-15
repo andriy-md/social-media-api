@@ -1,4 +1,7 @@
 from django.db.models import Q
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from posts.models import Post
@@ -39,3 +42,9 @@ class PostViewSet(ModelViewSet):
     def perform_create(self, serializer):
         profile = Profile.objects.get(user=self.request.user)
         serializer.save(author=profile)
+
+    @action(detail=False, methods=["get"], url_path="my-posts")
+    def my_posts(self, request):
+        my_posts = self.get_queryset().filter(author__user=request.user)
+        serializer = self.get_serializer(my_posts, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
